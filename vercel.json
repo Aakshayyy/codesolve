@@ -3,7 +3,7 @@
   "outputDirectory": "public",
   "functions": {
     "api/index.php": {
-      "runtime": "vercel-php@0.7.3"
+      "runtime": "vercel-php@0.7.4"
     }
   },
   "routes": [
@@ -24,6 +24,7 @@
     "APP_SERVICES_CACHE": "/tmp/services.php",
     "VIEW_COMPILED_PATH": "/tmp",
     "CACHE_DRIVER": "array",
+    "CACHE_STORE": "array",
     "LOG_CHANNEL": "stderr",
     "SESSION_DRIVER": "cookie",
     "APP_DEBUG": "true"
