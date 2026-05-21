@@ -160,14 +160,15 @@ We have configured the application for seamless deployment to **Vercel** via Ser
 
 ### Added Files
 1. **`api/index.php`**: Created inside a new `/api` directory to act as the serverless execution entrypoint, importing the root `public/index.php`.
-2. **`vercel.json`**: Configured the community PHP runtime wrapper `vercel-php@0.7.3` and routed static build assets directly to Vercel's CDN, forwarding all dynamic traffic to the API gateway.
+2. **`vercel.json`**: Configured the community PHP runtime wrapper `vercel-php@0.7.3`, set `outputDirectory` to `public`, and routed static build assets directly to Vercel's CDN, forwarding all dynamic traffic to the API gateway.
+3. **`.vercelignore`**: Created to ignore unnecessary files and directories (like `vendor`, `node_modules`, `tests`) during the build process, preventing them from uploading to Vercel.
 
 ### Steps to Deploy
 1. **Import** the repository to Vercel.
 2. **Framework Preset**: Select **Other**.
 3. **Build & Development Settings**:
    - Set **Build Command** to `npm run build`.
-   - Set **Output Directory** to `public`.
+   - Set **Output Directory** to `public` (Vercel will automatically use this value from `vercel.json`).
 4. **Environment Variables**:
    Configure these parameters in Vercel settings:
    - `APP_KEY`: Standard Laravel application key.

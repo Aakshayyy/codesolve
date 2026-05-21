@@ -1,0 +1,8 @@
+/vendor
+/node_modules
+/tests
+.env
+.git
+.github
+README.md
+phpunit.xml
