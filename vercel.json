@@ -27,6 +27,7 @@
     "CACHE_STORE": "array",
     "LOG_CHANNEL": "stderr",
     "SESSION_DRIVER": "cookie",
-    "APP_DEBUG": "true"
+    "APP_DEBUG": "true",
+    "APP_KEY": "base64:JnNPdcNxTnp994YTLiUBv6xI5bTOB42xRyoyogjK2wg="
   }
 }
