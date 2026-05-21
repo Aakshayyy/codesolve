@@ -153,7 +153,8 @@ class ProblemController extends Controller
             'status' => $submission->status,
             'execution_time' => $submission->execution_time,
             'memory_used' => $submission->memory_used,
-            'created_at' => $submission->created_at->diffForHumans()
+            'created_at' => $submission->created_at->diffForHumans(),
+            'stderr' => $submission->stderr ?? null
         ]);
     }
 }

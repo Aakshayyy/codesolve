@@ -457,7 +457,7 @@
                         body: JSON.stringify({
                             language: this.language,
                             code: codeVal,
-                            input: this.useCustomInput ? this.customInput : ''
+                            input: this.useCustomInput ? this.customInput : @json($problem->testCases->first() ? $problem->testCases->first()->input : '')
                         })
                     })
                     .then(res => res.json())
@@ -466,12 +466,12 @@
                         this.executionTime = data.execution_time;
 
                         if (data.status === 'Compile Error') {
-                            this.compileOutput = data.error || 'Compiler error occurred.';
+                            this.compileOutput = data.stderr || 'Compiler error occurred.';
                             this.verdictStatus = 'Compilation Error';
                             this.verdictColor = 'bg-red-500/10 text-red-500';
                             this.consoleOutput = 'Code failed to compile.';
                         } else if (data.status === 'Runtime Error') {
-                            this.compileOutput = data.error || 'Runtime exception thrown.';
+                            this.compileOutput = data.stderr || 'Runtime exception thrown.';
                             this.verdictStatus = 'Runtime Error';
                             this.verdictColor = 'bg-rose-500/10 text-rose-500';
                             this.consoleOutput = 'Execution threw a runtime error.';
@@ -480,14 +480,26 @@
                             this.verdictColor = 'bg-amber-500/10 text-amber-500';
                             this.consoleOutput = 'Code exceeded time limits.';
                         } else {
-                            this.consoleOutput = data.output || '(Empty Output)';
+                            this.consoleOutput = data.stdout || '(Empty Output)';
                             this.expectedOutput = data.expected_output || '';
                             
-                            if (data.status === 'Accepted') {
-                                this.verdictStatus = 'Success';
-                                this.verdictColor = 'bg-emerald-500/10 text-emerald-500';
+                            if (data.status === 'Success') {
+                                if (this.useCustomInput) {
+                                    this.verdictStatus = 'Success';
+                                    this.verdictColor = 'bg-emerald-500/10 text-emerald-500';
+                                } else {
+                                    const actual = (data.stdout || '').trim();
+                                    const expected = (data.expected_output || '').trim();
+                                    if (actual === expected) {
+                                        this.verdictStatus = 'Success';
+                                        this.verdictColor = 'bg-emerald-500/10 text-emerald-500';
+                                    } else {
+                                        this.verdictStatus = 'Wrong Answer';
+                                        this.verdictColor = 'bg-rose-500/10 text-rose-500';
+                                    }
+                                }
                             } else {
-                                this.verdictStatus = 'Wrong Answer';
+                                this.verdictStatus = data.status || 'Wrong Answer';
                                 this.verdictColor = 'bg-rose-500/10 text-rose-500';
                             }
                         }
@@ -535,7 +547,15 @@
                             this.consoleOutput = 'All test cases passed! Points awarded.';
                         } else {
                             this.verdictColor = 'bg-rose-55/10 text-rose-500';
-                            this.consoleOutput = `Verdict details: ${data.status}. Run code to view standard output or check stderr logs.`;
+                            if (data.status === 'Compile Error') {
+                                this.compileOutput = data.stderr || 'Compiler error occurred.';
+                                this.consoleOutput = 'Code failed to compile during submission.';
+                            } else if (data.status === 'Runtime Error') {
+                                this.compileOutput = data.stderr || 'Runtime exception thrown.';
+                                this.consoleOutput = 'Execution threw a runtime error during submission.';
+                            } else {
+                                this.consoleOutput = `Verdict details: ${data.status}. Run code to view standard output or check stderr logs.`;
+                            }
                         }
                     })
                     .catch(err => {

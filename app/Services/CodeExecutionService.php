@@ -37,6 +37,7 @@ class CodeExecutionService
         $overallStatus = 'Accepted';
         $maxTime = 0;
         $maxMemory = 0;
+        $lastStderr = null;
 
         $wrappedCode = SignatureService::wrapWithDriver($problem, $language, $code);
 
@@ -57,6 +58,7 @@ class CodeExecutionService
 
             if ($result['status'] !== 'Success') {
                 $overallStatus = $result['status']; // e.g., Compile Error, Runtime Error, Time Limit Exceeded
+                $lastStderr = $result['stderr'] ?? null;
                 break;
             }
 
@@ -81,6 +83,8 @@ class CodeExecutionService
         if ($overallStatus === 'Accepted') {
             $this->updateUserStats($user, $problem);
         }
+
+        $submission->stderr = $lastStderr;
 
         return $submission;
     }
