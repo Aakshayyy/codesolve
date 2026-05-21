@@ -67,4 +67,21 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('contests', AdminContestController::class);
 });
 
+Route::get('/test-db', function () {
+    try {
+        $tables = \Illuminate\Support\Facades\DB::select("SELECT name FROM sqlite_master WHERE type='table'");
+        return response()->json([
+            'status' => 'success',
+            'tables' => array_column($tables, 'name'),
+            'connection' => config('database.default'),
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
+
 require __DIR__.'/auth.php';
