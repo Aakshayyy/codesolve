@@ -1,58 +1,176 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# CodeSolve Platform
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+CodeSolve is a complete Laravel 11 online competitive programming and problem-solving web application. This platform provides users with LeetCode/GeeksforGeeks-style practice workspace, real-time code executions in multiple languages, dynamic contests, nested discussion threads, leaderboards, and an advanced admin management panel.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 1. Tech Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Backend**: Laravel 11 (PHP 8.2+)
+- **Frontend**: Blade Templates, Tailwind CSS, Alpine.js, Monaco Editor, Chart.js
+- **Database**: MySQL (production), SQLite (local testing)
+- **Sandbox Execution**: Piston API (supports C++, Java, Python, JavaScript)
+- **Deployment**: Configured for local serve and Vercel serverless environment
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 2. Features
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### User Authentication & Dashboard
+- **Standard Authentication**: Register, login, password resets, and session management using Laravel Breeze.
+- **Enhanced Profile**: Custom user roles (`admin` vs `user`), profile picture uploads, coding streaks, point tracking, and achievement badges.
+- **Dynamic Stats Dashboard**: Solved difficulty distribution graphs powered by **Chart.js** (Easy, Medium, Hard), tag progress trackers, paginated submission history, and unlocked achievements.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Problems & Monaco Workspace
+- **Coding Problems Catalog**: Lists practice problems with search, difficulty levels, and concept tag filters.
+- **LeetCode-like Editor Panel**: Split-screen workspace. Left pane shows instructions, limits, and examples. Right pane integrates a **Monaco Editor** with autocomplete and parameter hints.
+- **Live Code Execution**: Supports C++, Java, Python, and JavaScript. Uses **Piston API** for sandboxed execution, with a custom offline mock parser fallback.
+- **Submissions Hub**: Tracks outcomes (`Accepted`, `Wrong Answer`, `Time Limit Exceeded`, `Runtime Error`, `Compile Error`) with execution time and memory footprint.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### Discussion & Social Interactions
+- **Nested Comments**: Threaded replies underneath each coding problem.
+- **Engagement**: Upvoting/downvoting comments and admin moderation tools.
 
-## Agentic Development
+### Contests Hub
+- **Contest Scheduler**: Upcoming, active, and past coding contests.
+- **Countdown Screens**: Live timers powered by Alpine.js.
+- **Leaderboards**: Stands dynamically updated based on penalty time and weight of solved problems.
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### Admin Panel
+- **Analytics Dashboard**: Active problems count, active contests, total users, and submissions.
+- **Management Tools**:Promote/demote user roles, delete accounts, global submission logs stream, and full CRUD panels for problems, test cases, and contests.
 
-```bash
-composer require laravel/boost --dev
+---
 
-php artisan boost:install
+## 3. Database Schema
+
+```mermaid
+erDiagram
+    users ||--o{ submissions : "makes"
+    users ||--o{ comments : "posts"
+    users ||--o{ user_badge : "earns"
+    problems ||--o{ test_cases : "has"
+    problems ||--o{ submissions : "receives"
+    problems ||--o{ comment_upvotes : "upvoted_by"
+    problems ||--o{ problem_tag : "tagged"
+    tags ||--o{ problem_tag : "categorizes"
+    contests ||--o{ contest_problem : "contains"
+    contests ||--o{ submissions : "logs"
+    comments ||--o{ comment_upvotes : "has"
+    comments ||--o{ comments : "replies"
+    badges ||--o{ user_badge : "granted_to"
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## 4. Code Execution Workflow
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```mermaid
+sequenceDiagram
+    participant User as Monaco Frontend
+    participant App as CodeExecutionService
+    participant API as Piston Sandbox API
+    
+    User->>App: Send code & language selection
+    App->>App: Parse problem inputs
+    alt Connection Available
+        App->>API: POST /api/v2/piston/execute
+        API-->>App: Return stdout & stderr
+    else Connection Offline
+        App->>App: Execute local mock fallback comparison
+    end
+    App->>App: Assess output vs expected test cases
+    App->>User: Display verdict (Accepted, WA, TLE, RE)
+```
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 5. LeetCode-Style Auto-Driver & Monaco Autocomplete
 
-## Security Vulnerabilities
+We have implemented an automated code wrapping and signature-based code driver engine:
+- **Signatures System**: Problem definitions in `config/signatures.php` map arguments, input types, output mapping, and return signatures for all 54 seeded problems.
+- **Dynamic Starter Templates**: Monaco Editor automatically generates and loads a clean template containing the target `Solution` class and method declaration in C++, Java, Python, and JavaScript when loading a problem.
+- **Wrapped Execution**: When code is executed or submitted, `SignatureService` silently wraps the user's solution with standard input/output parsing driver code before dispatching to the sandbox.
+- **Autocomplete & IntelliSense**: Custom Monaco Editor script integrations in `resources/views/problems/show.blade.php` support parameter hints, word completions, and trigger characters.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## 6. How to Run Locally
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Prerequisites
+1. PHP 8.2 or 8.3
+2. Composer
+3. Node.js & NPM
+4. MySQL Server
+
+### Startup Commands
+
+1. **Clone and Install dependencies**
+   ```bash
+   composer install
+   npm install
+   ```
+
+2. **Configure Environment**
+   Duplicate `.env.example` to `.env` and set:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=codesolve
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
+
+3. **Migrate and Seed Database**
+   ```bash
+   php artisan migrate:fresh --seed
+   ```
+
+4. **Build Frontend Assets**
+   ```bash
+   npm run build
+   ```
+
+5. **Start Dev Server**
+   ```bash
+   php artisan serve
+   ```
+
+### Default Credentials
+- **Admin**: `admin@codesolve.com` | Password: `password`
+- **User**: `user@codesolve.com` | Password: `password`
+
+---
+
+## 7. Running Tests
+
+The application includes 73 unit and feature tests covering signature templates, auto-drivers, contests, and authentication guards.
+
+Run tests using:
+```bash
+php artisan test
+```
+
+---
+
+## 8. Vercel Deployment Configuration
+
+We have configured the application for seamless deployment to **Vercel** via Serverless Functions:
+
+### Added Files
+1. **`api/index.php`**: Created inside a new `/api` directory to act as the serverless execution entrypoint, importing the root `public/index.php`.
+2. **`vercel.json`**: Configured the community PHP runtime wrapper `vercel-php@0.7.3` and routed static build assets directly to Vercel's CDN, forwarding all dynamic traffic to the API gateway.
+
+### Steps to Deploy
+1. **Import** the repository to Vercel.
+2. **Framework Preset**: Select **Other**.
+3. **Build & Development Settings**:
+   - Set **Build Command** to `npm run build`.
+   - Set **Output Directory** to `public`.
+4. **Environment Variables**:
+   Configure these parameters in Vercel settings:
+   - `APP_KEY`: Standard Laravel application key.
+   - `DB_CONNECTION`: `mysql` (use an external Cloud DB like AWS RDS, Supabase, or TiDB).
+   - `DB_HOST` / `DB_PORT` / `DB_DATABASE` / `DB_USERNAME` / `DB_PASSWORD`: Connection parameters.
+   - `FILESYSTEM_DISK`: `s3` (recommended for profile picture uploads since Vercel uses a read-only filesystem).
