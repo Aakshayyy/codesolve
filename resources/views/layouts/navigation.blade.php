@@ -26,6 +26,9 @@
                     <x-nav-link :href="route('leaderboard')" :active="request()->routeIs('leaderboard')" class="dark:text-gray-300 dark:hover:text-white">
                         {{ __('Leaderboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('theory.index')" :active="request()->routeIs('theory.*')" class="dark:text-gray-300 dark:hover:text-white">
+                        {{ __('Theory') }}
+                    </x-nav-link>
                     @if(Auth::check() && Auth::user()->isAdmin())
                         <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')" class="text-indigo-600 dark:text-indigo-400 font-semibold">
                             {{ __('Admin Panel') }}
@@ -128,6 +131,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('leaderboard')" :active="request()->routeIs('leaderboard')" class="dark:text-gray-300">
                 {{ __('Leaderboard') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('theory.index')" :active="request()->routeIs('theory.*')" class="dark:text-gray-300">
+                {{ __('Theory') }}
             </x-responsive-nav-link>
             @if(Auth::check() && Auth::user()->isAdmin())
                 <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')" class="text-indigo-500 font-semibold">

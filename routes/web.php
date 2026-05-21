@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminProblemController;
 use App\Http\Controllers\Admin\AdminContestController;
+use App\Http\Controllers\TheoryController;
 use Illuminate\Support\Facades\Route;
 
 // Public Welcome Page
@@ -32,6 +33,11 @@ Route::get('/problems/{problem:slug}', [ProblemController::class, 'show'])->name
 Route::get('/contests', [ContestController::class, 'index'])->name('contests.index');
 Route::get('/contests/{contest:slug}', [ContestController::class, 'show'])->name('contests.show');
 Route::get('/contests/{contest:slug}/leaderboard', [ContestController::class, 'leaderboard'])->name('contests.leaderboard');
+
+// Public Theory Section
+Route::get('/theory', [TheoryController::class, 'index'])->name('theory.index');
+Route::get('/theory/{category}', [TheoryController::class, 'category'])->name('theory.category');
+Route::get('/theory/{category}/{topic}', [TheoryController::class, 'topic'])->name('theory.topic');
 
 // Authenticated Routes
 Route::middleware('auth')->group(function () {

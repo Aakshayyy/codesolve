@@ -242,18 +242,18 @@
             </div>
 
             <!-- Right Pane: Code Editor Workspace -->
-            <div class="w-full md:w-1/2 flex flex-col h-full overflow-hidden bg-gray-900">
+            <div class="w-full md:w-1/2 flex flex-col h-full overflow-hidden" :class="darkMode ? 'bg-gray-900' : 'bg-gray-50'">
                 <!-- Monaco Editor container -->
                 <div class="flex-grow relative h-0">
                     <div id="editor-container" class="absolute inset-0 w-full h-full"></div>
                 </div>
 
                 <!-- Action Bar & Results Drawer -->
-                <div class="shrink-0 bg-[#1e1e1e] border-t border-gray-800 flex flex-col">
+                <div class="shrink-0 flex flex-col border-t transition-colors duration-200" :class="darkMode ? 'bg-[#1e1e1e] border-gray-800' : 'bg-white border-gray-200'">
                     <!-- Drawer Header / Custom Input Selection -->
-                    <div class="px-4 py-2 border-b border-gray-800 flex items-center justify-between">
+                    <div class="px-4 py-2 border-b flex items-center justify-between" :class="darkMode ? 'border-gray-800' : 'border-gray-200'">
                         <label class="flex items-center space-x-2 text-xs font-bold text-gray-400 cursor-pointer">
-                            <input type="checkbox" x-model="useCustomInput" class="rounded border-gray-800 bg-gray-950 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-900" />
+                            <input type="checkbox" x-model="useCustomInput" class="rounded border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-blue-500 focus:ring-blue-500" />
                             <span>Use Custom Input</span>
                         </label>
                         <div class="flex space-x-2">
@@ -269,14 +269,16 @@
                     <div x-show="useCustomInput" class="p-4" x-transition>
                         <label for="custom-input-box" class="sr-only">Custom Input Data</label>
                         <textarea id="custom-input-box" x-model="customInput" placeholder="Stdin input data here..." rows="3"
-                                  class="w-full bg-[#151515] border border-gray-800 rounded-xl p-3 text-xs font-mono text-gray-300 focus:ring-blue-500 focus:ring-offset-gray-900 focus:border-blue-500"></textarea>
+                                  class="w-full rounded-xl p-3 text-xs font-mono focus:ring-blue-500"
+                                  :class="darkMode ? 'bg-[#151515] border-gray-800 text-gray-300' : 'bg-white border-gray-200 text-gray-800'"></textarea>
                     </div>
 
                     <!-- Output console -->
-                    <div x-show="consoleOpen" class="bg-[#151515] border-b border-gray-850 max-h-60 overflow-y-auto p-4 space-y-3 font-mono text-xs text-gray-300 select-text">
-                        <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+                    <div x-show="consoleOpen" class="max-h-60 overflow-y-auto p-4 space-y-3 font-mono text-xs border-b select-text"
+                         :class="darkMode ? 'bg-[#151515] border-gray-805 text-gray-300' : 'bg-white border-gray-200 text-gray-800'">
+                        <div class="flex items-center justify-between border-b pb-2" :class="darkMode ? 'border-gray-800' : 'border-gray-200'">
                             <span class="font-bold text-gray-400">Console Log / Results</span>
-                            <button @click="consoleOpen = false" class="text-gray-500 hover:text-gray-300">Close</button>
+                            <button @click="consoleOpen = false" class="text-gray-500 hover:text-gray-300 dark:hover:text-white">Close</button>
                         </div>
 
                         <!-- Pending status spinner -->
@@ -305,12 +307,14 @@
                                     <div class="space-y-2">
                                         <div>
                                             <div class="text-[10px] font-bold text-gray-450 uppercase mb-1">Standard Output:</div>
-                                            <pre class="bg-gray-950 border border-gray-850 p-2.5 rounded-xl whitespace-pre-wrap overflow-x-auto text-gray-200" x-text="consoleOutput"></pre>
+                                            <pre class="border p-2.5 rounded-xl whitespace-pre-wrap overflow-x-auto text-gray-800"
+                                                 :class="darkMode ? 'bg-gray-950 border-gray-800 text-gray-200' : 'bg-gray-50 border-gray-200 text-gray-800'" x-text="consoleOutput"></pre>
                                         </div>
                                         <template x-if="expectedOutput">
                                             <div>
                                                 <div class="text-[10px] font-bold text-gray-450 uppercase mb-1">Expected Output:</div>
-                                                <pre class="bg-gray-950 border border-gray-850 p-2.5 rounded-xl whitespace-pre-wrap overflow-x-auto text-gray-450" x-text="expectedOutput"></pre>
+                                                <pre class="border p-2.5 rounded-xl whitespace-pre-wrap overflow-x-auto text-gray-450"
+                                                     :class="darkMode ? 'bg-gray-950 border-gray-800 text-gray-400' : 'bg-gray-50 border-gray-200 text-gray-600'" x-text="expectedOutput"></pre>
                                             </div>
                                         </template>
                                     </div>
@@ -320,15 +324,17 @@
                     </div>
 
                     <!-- Bottom Buttons row -->
-                    <div class="px-6 py-4 flex items-center justify-between bg-[#1e1e1e]">
+                    <div class="px-6 py-4 flex items-center justify-between transition-colors duration-200" :class="darkMode ? 'bg-[#1e1e1e]' : 'bg-gray-50'">
                         <div>
-                            <button @click="consoleOpen = !consoleOpen" class="text-xs font-semibold text-gray-450 hover:text-white px-3 py-2 rounded-xl bg-gray-850 border border-gray-800 transition-colors">
+                            <button @click="consoleOpen = !consoleOpen" class="text-xs font-semibold px-3 py-2 rounded-xl transition-colors border"
+                                    :class="darkMode ? 'text-gray-400 hover:text-white bg-gray-800 border-gray-700' : 'text-gray-600 hover:text-gray-900 bg-white border-gray-200'">
                                 Toggle Console
                             </button>
                         </div>
                         <div class="flex space-x-3">
                             @auth
-                                <button @click="runCode()" :disabled="executing" class="bg-gray-800 hover:bg-gray-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors border border-gray-750 disabled:opacity-50">
+                                <button @click="runCode()" :disabled="executing" class="font-bold px-5 py-2.5 rounded-xl text-sm transition-colors border disabled:opacity-50"
+                                        :class="darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border-gray-700' : 'bg-white hover:bg-gray-100 text-gray-750 border-gray-300'">
                                     Run Code
                                 </button>
                                 <button @click="submitCode()" :disabled="executing" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-colors shadow-lg shadow-blue-500/10 disabled:opacity-50">
@@ -371,7 +377,7 @@
                         window.editor = monaco.editor.create(document.getElementById('editor-container'), {
                             value: this.defaultTemplates[this.language],
                             language: 'cpp',
-                            theme: 'vs-dark',
+                            theme: this.darkMode ? 'vs-dark' : 'vs',
                             automaticLayout: true,
                             minimap: { enabled: false },
                             fontSize: 14,
@@ -390,6 +396,13 @@
                             snippetSuggestions: 'inline',
                             wordBasedSuggestions: 'allDocuments',
                             tabCompletion: 'on'
+                        });
+
+                        // Watch dark mode to update Monaco theme dynamically
+                        this.$watch('darkMode', val => {
+                            if (window.editor) {
+                                monaco.editor.setTheme(val ? 'vs-dark' : 'vs');
+                            }
                         });
                     });
                 },

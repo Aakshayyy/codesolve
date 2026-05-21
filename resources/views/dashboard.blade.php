@@ -37,7 +37,7 @@
             <!-- Dashboard Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Statistics Card 1: Problem Solving Progress -->
-                <div class="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-150 dark:border-gray-850 shadow-sm flex flex-col justify-between">
+                <div class="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between">
                     <div class="space-y-4">
                         <div class="flex items-center justify-between">
                             <span class="text-gray-500 dark:text-gray-400 font-semibold text-sm uppercase tracking-wider">Solved Problems</span>
@@ -47,7 +47,7 @@
                         </div>
                         <div class="flex items-baseline space-x-2">
                             <span class="text-4xl font-extrabold text-gray-900 dark:text-white font-outfit">{{ $solvedCount }}</span>
-                            <span class="text-gray-450 dark:text-gray-500 text-sm">/ {{ \App\Models\Problem::count() }} Total</span>
+                            <span class="text-gray-400 dark:text-gray-500 text-sm">/ {{ \App\Models\Problem::count() }} Total</span>
                         </div>
                         <!-- Difficulty Breakdown -->
                         <div class="space-y-2.5 pt-2">
@@ -83,7 +83,7 @@
                 </div>
 
                 <!-- Statistics Card 2: Chart.js Difficulty Ring -->
-                <div class="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-150 dark:border-gray-850 shadow-sm flex flex-col items-center justify-center">
+                <div class="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center">
                     <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 self-start mb-4">Solved Ratio</h3>
                     <div class="relative w-40 h-40">
                         <canvas id="difficultyChart"></canvas>
@@ -97,7 +97,7 @@
                 </div>
 
                 <!-- Statistics Card 3: Streak & Tag Performance -->
-                <div class="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-150 dark:border-gray-850 shadow-sm flex flex-col justify-between">
+                <div class="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-4">
                             <span class="text-gray-500 dark:text-gray-400 font-semibold text-sm uppercase tracking-wider">Coding Streak</span>
@@ -120,7 +120,7 @@
                                     {{ $tp['name'] }} <span class="font-extrabold text-blue-500 dark:text-blue-400 ms-1">{{ $tp['count'] }}</span>
                                 </span>
                             @empty
-                                <span class="text-xs text-gray-450 dark:text-gray-500">No topics solved yet. Solve problems to show stats here!</span>
+                                <span class="text-xs text-gray-400 dark:text-gray-500">No topics solved yet. Solve problems to show stats here!</span>
                             @endforelse
                         </div>
                     </div>
@@ -129,7 +129,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Submissions History Table (Left 2 cols) -->
-                <div class="lg:col-span-2 bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-150 dark:border-gray-850 shadow-sm space-y-6">
+                <div class="lg:col-span-2 bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm space-y-6">
                     <div class="flex items-center justify-between">
                         <h3 class="text-xl font-bold font-outfit text-gray-900 dark:text-white">Recent Submissions</h3>
                         <a href="{{ route('problems.index') }}" class="text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline">Solve More Problems</a>
@@ -196,14 +196,14 @@
                 </div>
 
                 <!-- Achievements & Badges (Right 1 col) -->
-                <div class="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-150 dark:border-gray-850 shadow-sm space-y-6">
+                <div class="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm space-y-6">
                     <h3 class="text-xl font-bold font-outfit text-gray-900 dark:text-white">Unlocked Badges</h3>
                     <div class="grid grid-cols-2 gap-4">
                         @foreach($badges as $badge)
                             <div class="relative group p-4 border rounded-2xl flex flex-col items-center justify-center text-center transition-all duration-200 
                                 {{ $badge['unlocked'] 
-                                    ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30 text-gray-905 dark:text-white' 
-                                    : 'bg-gray-50/50 dark:bg-gray-850 border-gray-100 dark:border-gray-800 text-gray-400 opacity-60' }}">
+                                    ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30 text-gray-900 dark:text-white' 
+                                    : 'bg-gray-50/50 dark:bg-gray-800 border-gray-100 dark:border-gray-800 text-gray-400 opacity-60' }}">
                                 
                                 <div class="text-4xl mb-2 transition-transform duration-200 group-hover:scale-110 {{ $badge['unlocked'] ? '' : 'filter grayscale' }}">
                                     {{ $badge['icon'] }}
