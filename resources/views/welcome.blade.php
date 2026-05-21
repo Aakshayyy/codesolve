@@ -33,23 +33,32 @@
                     </span>
                 </a>
 
-                <div class="flex items-center space-x-4">
-                    <!-- Dark mode toggle -->
-                    <button @click="darkMode = !darkMode" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-150 dark:hover:bg-gray-900 rounded-lg transition-colors">
-                        <svg x-show="darkMode" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z" clip-rule="evenodd" />
-                        </svg>
-                        <svg x-show="!darkMode" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                        </svg>
-                    </button>
+                <div class="flex items-center space-x-6">
+                    <div class="hidden md:flex items-center space-x-6">
+                        <a href="{{ route('theory.index') }}" class="text-sm font-semibold text-gray-750 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Theory</a>
+                        <a href="{{ route('problems.index') }}" class="text-sm font-semibold text-gray-750 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Problems</a>
+                        <a href="{{ route('contests.index') }}" class="text-sm font-semibold text-gray-750 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Contests</a>
+                        <a href="{{ route('leaderboard') }}" class="text-sm font-semibold text-gray-750 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Leaderboard</a>
+                    </div>
 
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">Dashboard</a>
-                    @else
-                        <a href="{{ route('login') }}" class="text-sm font-medium text-gray-750 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">Log in</a>
-                        <a href="{{ route('register') }}" class="text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-all duration-200 shadow-md shadow-blue-500/20">Register</a>
-                    @endauth
+                    <div class="flex items-center space-x-4">
+                        <!-- Dark mode toggle -->
+                        <button @click="darkMode = !darkMode" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-150 dark:hover:bg-gray-900 rounded-lg transition-colors">
+                            <svg x-show="darkMode" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z" clip-rule="evenodd" />
+                            </svg>
+                            <svg x-show="!darkMode" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                            </svg>
+                        </button>
+
+                        @auth
+                            <a href="{{ route('dashboard') }}" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">Dashboard</a>
+                        @else
+                            <a href="{{ route('login') }}" class="text-sm font-medium text-gray-750 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">Log in</a>
+                            <a href="{{ route('register') }}" class="text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-all duration-200 shadow-md shadow-blue-500/20">Register</a>
+                        @endauth
+                    </div>
                 </div>
             </header>
 
@@ -72,10 +81,13 @@
                     </p>
 
                     <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <a href="{{ route('problems.index') }}" class="w-full sm:w-auto text-center text-white bg-gradient-to-r from-blue-650 to-indigo-650 hover:from-blue-705 hover:to-indigo-705 px-8 py-3.5 rounded-xl font-semibold shadow-lg shadow-indigo-500/20 transition-all duration-200">
+                        <a href="{{ route('theory.index') }}" class="w-full sm:w-auto text-center text-white bg-gradient-to-r from-blue-650 to-indigo-650 hover:from-blue-705 hover:to-indigo-705 px-8 py-3.5 rounded-xl font-semibold shadow-lg shadow-indigo-500/20 transition-all duration-200 animate-pulse-slow">
+                            Learn Theory Academy
+                        </a>
+                        <a href="{{ route('problems.index') }}" class="w-full sm:w-auto text-center text-gray-700 dark:text-gray-250 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-850 px-8 py-3.5 rounded-xl font-semibold transition-all duration-200">
                             Explore Problems
                         </a>
-                        <a href="{{ route('contests.index') }}" class="w-full sm:w-auto text-center text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 px-8 py-3.5 rounded-xl font-semibold transition-all duration-200">
+                        <a href="{{ route('contests.index') }}" class="w-full sm:w-auto text-center text-gray-700 dark:text-gray-250 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-850 px-8 py-3.5 rounded-xl font-semibold transition-all duration-200">
                             Join Contests
                         </a>
                     </div>
