@@ -35,7 +35,21 @@ return [
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
-            'database' => env('DB_DATABASE', database_path('database.sqlite')),
+            'database' => env('DB_DATABASE', (function() {
+                $defaultPath = database_path('database.sqlite');
+                if (isset($_SERVER['VERCEL_COMMIT_ID']) || env('VERCEL') || getenv('VERCEL')) {
+                    $tmpPath = '/tmp/database.sqlite';
+                    if (!file_exists($tmpPath)) {
+                        if (file_exists($defaultPath)) {
+                            copy($defaultPath, $tmpPath);
+                        } else {
+                            touch($tmpPath);
+                        }
+                    }
+                    return $tmpPath;
+                }
+                return $defaultPath;
+            })()),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
             'busy_timeout' => null,
