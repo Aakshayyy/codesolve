@@ -1,67 +1,89 @@
-# Graphs & DFS/BFS
+# DSA Graphs & DFS/BFS
 
-A Graph is a non-linear data structure consisting of a finite set of vertices (or nodes) and a set of edges connecting them. Graphs are used to represent networks (social networks, roads, maps).
+A Graph is a non-linear data structure consisting of a finite set of **Vertices** (or Nodes) and a set of **Edges** connecting them. Graphs are used to model networks like social networks, maps, and internet routing.
 
-## Graph Representations
-1. **Adjacency Matrix**: A 2D array of size $V \times V$ where cell `matrix[i][j] = 1` indicates an edge exists from $i$ to $j$.
-   * Space: $O(V^2)$
-   * Checking edge existence: $O(1)$
-2. **Adjacency List**: An array of lists of size $V$. The list at index $i$ stores all adjacent neighbors of vertex $i$.
-   * Space: $O(V + E)$ (highly efficient for sparse graphs)
-   * Finding neighbors: $O(1)$ (direct lookup)
-
----
-
-## 1. Depth-First Search (DFS)
-DFS explores as deep as possible along each branch before backtracking. It is typically implemented recursively (using the call stack).
-
-```cpp
-#include <vector>
-#include <iostream>
-using namespace std;
-
-void dfs(int node, vector<vector<int>>& adj, vector<bool>& visited) {
-    visited[node] = true;
-    cout << node << " ";
-    
-    for (int neighbor : adj[node]) {
-        if (!visited[neighbor]) {
-            dfs(neighbor, adj, visited);
-        }
-    }
-}
 ```
-* **Complexity**: $O(V + E)$
+    ( 0 ) ------- ( 1 )
+      |             /
+      |            /
+      |           /
+    ( 2 ) ------- ( 3 )
+```
 
 ---
 
-## 2. Breadth-First Search (BFS)
-BFS explores neighbors layer-by-layer. It is implemented iteratively using a Queue.
+## Graph Terminologies
 
-```cpp
-#include <queue>
-#include <vector>
-using namespace std;
+- **Directed Graph (Digraph)**: Edges have direction (e.g. $A \rightarrow B$).
+- **Undirected Graph**: Edges are bidirectional (e.g. $A - B$).
+- **Weighted Graph**: Edges have numerical values associated with them (costs/distances).
+- **Cyclic Graph**: Contains a path that starts and ends at the same vertex.
 
-void bfs(int start, vector<vector<int>>& adj, int V) {
-    vector<bool> visited(V, false);
-    queue<int> q;
-    
+---
+
+## Graph Representations in Memory
+
+There are two primary ways to represent a graph in memory:
+
+### 1. Adjacency Matrix
+A 2D array of size $V \times V$ where $V$ is the number of vertices. If `adj[i][j] = 1`, there is an edge from $i$ to $j$.
+- **Space Complexity**: $O(V^2)$
+- **Best for**: Dense graphs (many edges), or quick edge lookup $O(1)$.
+
+### 2. Adjacency List
+An array of lists. The index of the array represents a vertex, and each element in the list represents its neighbors.
+- **Space Complexity**: $O(V + E)$ where $E$ is the number of edges.
+- **Best for**: Sparse graphs (few edges). Preferred in competitive programming.
+
+---
+
+## Graph Traversals
+
+To traverse a graph, you must keep track of a `visited` array to prevent infinite loops caused by cycles.
+
+### 1. Breadth-First Search (BFS)
+BFS explores the graph level-by-level, visiting all neighbors of a node before moving to their neighbors. Uses a **Queue** internally.
+- **Time Complexity**: $O(V + E)$
+- **Applications**: Finding the shortest path in an unweighted graph.
+
+```java
+import java.util.*;
+
+public void bfs(int start, ArrayList<ArrayList<Integer>> adj, int V) {
+    boolean[] visited = new boolean[V];
+    Queue<Integer> q = new LinkedList<>();
+
     visited[start] = true;
-    q.push(start);
-    
-    while (!q.empty()) {
-        int node = q.front();
-        q.pop();
-        
-        for (int neighbor : adj[node]) {
+    q.add(start);
+
+    while (!q.isEmpty()) {
+        int curr = q.poll();
+        System.out.print(curr + " ");
+
+        for (int neighbor : adj.get(curr)) {
             if (!visited[neighbor]) {
                 visited[neighbor] = true;
-                q.push(neighbor);
+                q.add(neighbor);
             }
         }
     }
 }
 ```
-* **Complexity**: $O(V + E)$
-* **Feature**: BFS guarantees finding the **shortest path** in an unweighted graph.
+
+### 2. Depth-First Search (DFS)
+DFS explores the graph by going as deep as possible along each branch before backtracking. Uses a **Stack** (implicitly via recursion).
+- **Time Complexity**: $O(V + E)$
+- **Applications**: Cycle detection, topological sorting, pathfinding.
+
+```java
+public void dfs(int curr, ArrayList<ArrayList<Integer>> adj, boolean[] visited) {
+    visited[curr] = true;
+    System.out.print(curr + " ");
+
+    for (int neighbor : adj.get(curr)) {
+        if (!visited[neighbor]) {
+            dfs(neighbor, adj, visited); // Recursive call
+        }
+    }
+}
+```
