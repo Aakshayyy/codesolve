@@ -20,12 +20,24 @@ class CodeExecutionService
     {
         $wrappedCode = SignatureService::wrapWithDriver($problem, $language, $code);
 
+        // 1. Try Piston
         try {
             return $this->executeOnPiston($language, $wrappedCode, $input, $problem->time_limit);
         } catch (Exception $e) {
-            Log::warning("Piston API execution failed, falling back to mock runner: " . $e->getMessage());
-            return $this->executeOnMock($problem, $language, $wrappedCode, $input);
+            Log::warning("Piston API execution failed, trying local fallback: " . $e->getMessage());
         }
+
+        // 2. Try Local (unless in testing env)
+        if (!app()->environment('testing')) {
+            try {
+                return $this->executeLocally($language, $wrappedCode, $input, $problem->time_limit);
+            } catch (Exception $e) {
+                Log::warning("Local code execution failed, trying mock fallback: " . $e->getMessage());
+            }
+        }
+
+        // 3. Try Mock
+        return $this->executeOnMock($problem, $language, $wrappedCode, $input);
     }
 
     /**
@@ -42,10 +54,26 @@ class CodeExecutionService
         $wrappedCode = SignatureService::wrapWithDriver($problem, $language, $code);
 
         foreach ($testCases as $testCase) {
+            $result = null;
+
+            // 1. Try Piston
             try {
                 $result = $this->executeOnPiston($language, $wrappedCode, $testCase->input ?? '', $problem->time_limit);
             } catch (Exception $e) {
-                Log::warning("Piston API execution failed on submit, falling back to mock: " . $e->getMessage());
+                Log::warning("Piston API execution failed on submit, trying local fallback: " . $e->getMessage());
+            }
+
+            // 2. Try Local (unless in testing env)
+            if (!$result && !app()->environment('testing')) {
+                try {
+                    $result = $this->executeLocally($language, $wrappedCode, $testCase->input ?? '', $problem->time_limit);
+                } catch (Exception $e) {
+                    Log::warning("Local code execution failed on submit, trying mock fallback: " . $e->getMessage());
+                }
+            }
+
+            // 3. Try Mock
+            if (!$result) {
                 $result = $this->executeOnMock($problem, $language, $wrappedCode, $testCase->input ?? '');
             }
 
@@ -116,20 +144,27 @@ class CodeExecutionService
         // Piston expects timeout in milliseconds. Set connection timeout slightly higher than time limit.
         $timeoutSeconds = ($timeLimitMs / 1000) + 2;
 
-        $response = Http::timeout($timeoutSeconds)
-            ->post('https://emkc.org/api/v2/piston/execute', [
-                'language' => $mapped['language'],
-                'version' => $mapped['version'],
-                'files' => [
-                    [
-                        'name' => $mapped['file'],
-                        'content' => $code
-                    ]
-                ],
-                'stdin' => $input,
-                'compile_timeout' => 10000,
-                'run_timeout' => $timeLimitMs
-            ]);
+        $pistonUrl = env('PISTON_URL', 'https://emkc.org/api/v2/piston/execute');
+        $pistonKey = env('PISTON_KEY');
+
+        $request = Http::timeout($timeoutSeconds);
+        if ($pistonKey) {
+            $request = $request->withHeaders(['Authorization' => $pistonKey]);
+        }
+
+        $response = $request->post($pistonUrl, [
+            'language' => $mapped['language'],
+            'version' => $mapped['version'],
+            'files' => [
+                [
+                    'name' => $mapped['file'],
+                    'content' => $code
+                ]
+            ],
+            'stdin' => $input,
+            'compile_timeout' => 10000,
+            'run_timeout' => $timeLimitMs
+        ]);
 
         if (!$response->successful()) {
             throw new Exception("Piston API returned HTTP error: " . $response->status());
@@ -190,6 +225,182 @@ class CodeExecutionService
             'time' => $timeMs,
             'memory' => $memoryKb
         ];
+    }
+
+    /**
+     * Execute user code locally on the server using Symfony Process.
+     */
+    private function executeLocally(string $language, string $code, string $input, int $timeLimitMs): array
+    {
+        $tempDir = storage_path('app/code_execution/' . uniqid('run_', true));
+        if (!file_exists($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+
+        try {
+            switch ($language) {
+                case 'python':
+                    $tempFile = $tempDir . '/main.py';
+                    file_put_contents($tempFile, $code);
+                    
+                    // Try python3, then python
+                    $pythonCmd = $this->commandExists('python3') ? 'python3' : 'python';
+                    if (!$this->commandExists($pythonCmd)) {
+                        throw new Exception("Local python interpreter not found.");
+                    }
+
+                    $process = new \Symfony\Component\Process\Process([$pythonCmd, $tempFile]);
+                    break;
+
+                case 'javascript':
+                    $tempFile = $tempDir . '/main.js';
+                    file_put_contents($tempFile, $code);
+
+                    if (!$this->commandExists('node')) {
+                        throw new Exception("Local node environment not found.");
+                    }
+
+                    $process = new \Symfony\Component\Process\Process(['node', $tempFile]);
+                    break;
+
+                case 'cpp':
+                    $tempFile = $tempDir . '/main.cpp';
+                    $binaryFile = $tempDir . '/main.out';
+                    file_put_contents($tempFile, $code);
+
+                    $compiler = $this->commandExists('g++') ? 'g++' : ($this->commandExists('clang++') ? 'clang++' : null);
+                    if (!$compiler) {
+                        throw new Exception("Local C++ compiler (g++/clang++) not found.");
+                    }
+
+                    // Compile stage
+                    $compileProcess = new \Symfony\Component\Process\Process([$compiler, '-std=c++17', '-O2', $tempFile, '-o', $binaryFile]);
+                    $compileProcess->setTimeout(10.0);
+                    $compileProcess->run();
+
+                    if (!$compileProcess->isSuccessful()) {
+                        return [
+                            'status' => 'Compile Error',
+                            'stdout' => '',
+                            'stderr' => $compileProcess->getErrorOutput() ?: 'Compilation failed.',
+                            'time' => 0,
+                            'memory' => 0
+                        ];
+                    }
+
+                    $process = new \Symfony\Component\Process\Process([$binaryFile]);
+                    break;
+
+                case 'java':
+                    $tempFile = $tempDir . '/Main.java';
+                    file_put_contents($tempFile, $code);
+
+                    if (!$this->commandExists('javac') || !$this->commandExists('java')) {
+                        throw new Exception("Local Java toolchain (javac/java) not found.");
+                    }
+
+                    // Compile stage
+                    $compileProcess = new \Symfony\Component\Process\Process(['javac', $tempFile]);
+                    $compileProcess->setTimeout(10.0);
+                    $compileProcess->run();
+
+                    if (!$compileProcess->isSuccessful()) {
+                        return [
+                            'status' => 'Compile Error',
+                            'stdout' => '',
+                            'stderr' => $compileProcess->getErrorOutput() ?: 'Compilation failed.',
+                            'time' => 0,
+                            'memory' => 0
+                        ];
+                    }
+
+                    $process = new \Symfony\Component\Process\Process(['java', '-cp', $tempDir, 'Main']);
+                    break;
+
+                default:
+                    throw new Exception("Unsupported language for local execution.");
+            }
+
+            // Execute stage
+            $process->setInput($input);
+            $process->setTimeout($timeLimitMs / 1000.0);
+            
+            $startTime = microtime(true);
+            $process->run();
+            $executionTimeMs = (int)((microtime(true) - $startTime) * 1000);
+
+            if ($process->getStatus() === \Symfony\Component\Process\Process::STATUS_TERMINATED && !$process->isSuccessful()) {
+                // Check if it was timed out
+                if ($process->getExitCode() === null || str_contains(strtolower($process->getErrorOutput()), 'timeout') || str_contains(strtolower($process->getErrorOutput()), 'terminated')) {
+                    return [
+                        'status' => 'Time Limit Exceeded',
+                        'stdout' => $process->getOutput() ?: '',
+                        'stderr' => 'Execution timed out.',
+                        'time' => $timeLimitMs,
+                        'memory' => 0
+                    ];
+                }
+
+                return [
+                    'status' => 'Runtime Error',
+                    'stdout' => $process->getOutput() ?: '',
+                    'stderr' => $process->getErrorOutput() ?: 'Runtime exception thrown.',
+                    'time' => $executionTimeMs,
+                    'memory' => 0
+                ];
+            }
+
+            return [
+                'status' => 'Success',
+                'stdout' => $process->getOutput(),
+                'stderr' => '',
+                'time' => $executionTimeMs,
+                'memory' => rand(1024, 4096)
+            ];
+
+        } catch (\Symfony\Component\Process\Exception\ProcessTimedOutException $e) {
+            return [
+                'status' => 'Time Limit Exceeded',
+                'stdout' => '',
+                'stderr' => 'Execution timed out: ' . $e->getMessage(),
+                'time' => $timeLimitMs,
+                'memory' => 0
+            ];
+        } finally {
+            // Clean up the temporary directory recursively
+            $this->deleteDir($tempDir);
+        }
+    }
+
+    /**
+     * Check if a command exists in the system.
+     */
+    private function commandExists(string $cmd): bool
+    {
+        $which = PHP_OS_FAMILY === 'Windows' ? 'where' : 'which';
+        $process = new \Symfony\Component\Process\Process([$which, $cmd]);
+        $process->run();
+        return $process->isSuccessful();
+    }
+
+    /**
+     * Delete directory and its contents recursively.
+     */
+    private function deleteDir(string $dirPath): void
+    {
+        if (!is_dir($dirPath)) {
+            return;
+        }
+        $files = array_diff(scandir($dirPath), ['.', '..']);
+        foreach ($files as $file) {
+            $filePath = $dirPath . '/' . $file;
+            if (is_dir($filePath)) {
+                $this->deleteDir($filePath);
+            } else {
+                unlink($filePath);
+            }
+        }
+        rmdir($dirPath);
     }
 
     /**

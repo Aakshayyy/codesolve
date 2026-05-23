@@ -222,6 +222,42 @@
                         @endforeach
                     </div>
                 </div>
+
+                <!-- Certificates Card -->
+                <div class="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm space-y-6">
+                    <h3 class="text-xl font-bold font-outfit text-gray-900 dark:text-white">Earned Certificates</h3>
+                    @if(count($earnedCertificates) > 0)
+                        <div class="space-y-3">
+                            @foreach($earnedCertificates as $cert)
+                                <div class="p-4 border rounded-2xl flex items-center justify-between bg-slate-50 dark:bg-gray-950 border-slate-100 dark:border-gray-900">
+                                    <div class="flex items-center space-x-3.5 font-outfit">
+                                        @if($cert['type'] === 'gold')
+                                            <div class="w-10 h-10 rounded-full bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center text-xl text-yellow-500">🏆</div>
+                                        @elseif($cert['type'] === 'silver')
+                                            <div class="w-10 h-10 rounded-full bg-slate-400/10 border border-slate-400/30 flex items-center justify-center text-xl text-slate-400">🥈</div>
+                                        @else
+                                            <div class="w-10 h-10 rounded-full bg-amber-600/10 border border-amber-600/30 flex items-center justify-center text-xl text-amber-600">🥉</div>
+                                        @endif
+                                        <div>
+                                            <h4 class="text-xs font-bold text-gray-900 dark:text-white">{{ $cert['name'] }}</h4>
+                                            <p class="text-[10px] text-gray-500 mt-0.5 leading-snug">{{ $cert['description'] }}</p>
+                                        </div>
+                                    </div>
+                                    <a href="{{ route('certificates.view', ['user' => $user->id, 'type' => $cert['type']]) }}" target="_blank"
+                                       class="text-[10px] font-bold text-amber-500 hover:text-amber-600 border border-amber-500/20 hover:border-amber-500/40 px-3 py-1.5 rounded-xl transition-all">
+                                        View
+                                    </a>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-6 border border-dashed rounded-2xl border-gray-200 dark:border-gray-800 text-gray-400 font-outfit">
+                            <span class="text-3xl">🎓</span>
+                            <p class="text-xs mt-2 font-medium">No certificates unlocked yet.</p>
+                            <p class="text-[10px] text-gray-500 mt-0.5">Solve at least 1 problem to earn your Bronze certificate!</p>
+                        </div>
+                    @endif
+                </div>
             </div>
 
         </div>

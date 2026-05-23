@@ -127,6 +127,16 @@ class ProblemController extends Controller
             $validated['input'] ?? ''
         );
 
+        // Find the expected output if the input matches any of the problem's test cases
+        $expectedOutput = '';
+        foreach ($problem->testCases as $tc) {
+            if (trim($tc->input) === trim($validated['input'] ?? '')) {
+                $expectedOutput = $tc->expected_output;
+                break;
+            }
+        }
+        $result['expected_output'] = $expectedOutput;
+
         return response()->json($result);
     }
 

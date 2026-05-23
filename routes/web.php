@@ -22,6 +22,9 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth'])
     ->name('dashboard');
 
+// Public Certificates
+Route::get('/certificates/{user}/{type}', [DashboardController::class, 'viewCertificate'])->name('certificates.view');
+
 // Public Leaderboard rankings
 Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
 

@@ -909,7 +909,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // 6. Create Contests
-        // Active Contest (running now)
+        // Active Weekly Contest (running now)
         $contest1 = Contest::create([
             'title' => 'Weekly CodeSolve Challenge #1',
             'slug' => 'weekly-codesolve-challenge-1',
@@ -918,7 +918,6 @@ class DatabaseSeeder extends Seeder
             'end_time' => Carbon::now()->addHours(2),
         ]);
         
-        // Find seeded problems for contest association
         $p1 = Problem::where('slug', 'two-sum')->first();
         $p2 = Problem::where('slug', 'reverse-string')->first();
         if ($p1 && $p2) {
@@ -944,6 +943,255 @@ class DatabaseSeeder extends Seeder
                 $p3->id => ['points' => 100],
                 $p4->id => ['points' => 200]
             ]);
+        }
+
+        // --- NEW REQ: 2 Daily Contests ---
+        $daily1 = Contest::create([
+            'title' => 'Daily Coding Challenge #1',
+            'slug' => 'daily-coding-challenge-1',
+            'description' => 'Sharpen your coding skills every day with our quick daily rounds. Solve 2 problems in 4 hours!',
+            'start_time' => Carbon::now()->subHours(2),
+            'end_time' => Carbon::now()->addHours(2),
+        ]);
+
+        $p_ts = Problem::where('slug', 'two-sum')->first();
+        $p_fib = Problem::where('slug', 'fibonacci-number')->first();
+        if ($p_ts && $p_fib) {
+            $daily1->problems()->attach([
+                $p_ts->id => ['points' => 100],
+                $p_fib->id => ['points' => 100]
+            ]);
+        }
+
+        $daily2 = Contest::create([
+            'title' => 'Daily Coding Challenge #2',
+            'slug' => 'daily-coding-challenge-2',
+            'description' => 'Challenge yourself daily! Quick problems to practice implementation speed and runtime optimizations.',
+            'start_time' => Carbon::now()->subHours(1),
+            'end_time' => Carbon::now()->addHours(3),
+        ]);
+
+        $p_rev = Problem::where('slug', 'reverse-string')->first();
+        $p_pal = Problem::where('slug', 'palindrome-number')->first();
+        if ($p_rev && $p_pal) {
+            $daily2->problems()->attach([
+                $p_rev->id => ['points' => 100],
+                $p_pal->id => ['points' => 100]
+            ]);
+        }
+
+        // --- NEW REQ: 2 Testing Participants ---
+        $contestant1 = User::create([
+            'name' => 'Contestant One',
+            'email' => 'contestant1@codesolve.com',
+            'password' => Hash::make('password'),
+            'role' => 'user',
+            'email_verified_at' => now(),
+            'points' => 10,
+        ]);
+
+        $contestant2 = User::create([
+            'name' => 'Contestant Two',
+            'email' => 'contestant2@codesolve.com',
+            'password' => Hash::make('password'),
+            'role' => 'user',
+            'email_verified_at' => now(),
+            'points' => 20,
+        ]);
+
+        // Contest submissions for Contestant One
+        if ($p_ts && $p_fib) {
+            // Solve two-sum accepted
+            \App\Models\Submission::create([
+                'user_id' => $contestant1->id,
+                'problem_id' => $p_ts->id,
+                'contest_id' => $daily1->id,
+                'language' => 'python',
+                'code' => '# Contestant One Two Sum solution',
+                'status' => 'Accepted',
+                'execution_time' => 45,
+                'memory_used' => 2048,
+                'created_at' => Carbon::now()->subHours(1)->subMinutes(30),
+            ]);
+
+            // Attempt fibonacci wrong answer
+            \App\Models\Submission::create([
+                'user_id' => $contestant1->id,
+                'problem_id' => $p_fib->id,
+                'contest_id' => $daily1->id,
+                'language' => 'python',
+                'code' => '# Contestant One Fib attempt',
+                'status' => 'Wrong Answer',
+                'execution_time' => 30,
+                'memory_used' => 1024,
+                'created_at' => Carbon::now()->subHours(1)->subMinutes(15),
+            ]);
+        }
+
+        if ($p_rev) {
+            // Solve reverse-string accepted
+            \App\Models\Submission::create([
+                'user_id' => $contestant1->id,
+                'problem_id' => $p_rev->id,
+                'contest_id' => $daily2->id,
+                'language' => 'python',
+                'code' => '# Contestant One Reverse solution',
+                'status' => 'Accepted',
+                'execution_time' => 25,
+                'memory_used' => 1024,
+                'created_at' => Carbon::now()->subMinutes(45),
+            ]);
+        }
+
+        // Contest submissions for Contestant Two
+        if ($p_ts) {
+            \App\Models\Submission::create([
+                'user_id' => $contestant2->id,
+                'problem_id' => $p_ts->id,
+                'contest_id' => $daily1->id,
+                'language' => 'javascript',
+                'code' => '// Contestant Two Two Sum solution',
+                'status' => 'Accepted',
+                'execution_time' => 35,
+                'memory_used' => 4096,
+                'created_at' => Carbon::now()->subHours(1)->subMinutes(10),
+            ]);
+        }
+
+        if ($p_rev && $p_pal) {
+            \App\Models\Submission::create([
+                'user_id' => $contestant2->id,
+                'problem_id' => $p_rev->id,
+                'contest_id' => $daily2->id,
+                'language' => 'javascript',
+                'code' => '// Contestant Two Reverse solution',
+                'status' => 'Accepted',
+                'execution_time' => 20,
+                'memory_used' => 2048,
+                'created_at' => Carbon::now()->subMinutes(50),
+            ]);
+
+            \App\Models\Submission::create([
+                'user_id' => $contestant2->id,
+                'problem_id' => $p_pal->id,
+                'contest_id' => $daily2->id,
+                'language' => 'javascript',
+                'code' => '// Contestant Two Palindrome solution',
+                'status' => 'Accepted',
+                'execution_time' => 55,
+                'memory_used' => 2048,
+                'created_at' => Carbon::now()->subMinutes(30),
+            ]);
+        }
+
+        // --- NEW REQ: 3 Testing Code Solvers with Badges & Certificates ---
+        $alice = User::create([
+            'name' => 'Alice Coder',
+            'email' => 'alice@codesolve.com',
+            'password' => Hash::make('password'),
+            'role' => 'user',
+            'email_verified_at' => now(),
+            'points' => 150,
+            'streak' => 3,
+            'last_submission_at' => now()->subDay(),
+        ]);
+
+        $bob = User::create([
+            'name' => 'Bob Programmer',
+            'email' => 'bob@codesolve.com',
+            'password' => Hash::make('password'),
+            'role' => 'user',
+            'email_verified_at' => now(),
+            'points' => 550,
+            'streak' => 5,
+            'last_submission_at' => now()->subDay(),
+        ]);
+
+        $charlie = User::create([
+            'name' => 'Charlie Hacker',
+            'email' => 'charlie@codesolve.com',
+            'password' => Hash::make('password'),
+            'role' => 'user',
+            'email_verified_at' => now(),
+            'points' => 20,
+            'streak' => 1,
+            'last_submission_at' => now()->subDay(),
+        ]);
+
+        // Attach Badges
+        $badge1 = Badge::where('name', 'First Blood')->first();
+        $badge2 = Badge::where('name', 'Streak Starter')->first();
+        $badge3 = Badge::where('name', 'Code Cadet')->first();
+        $badge4 = Badge::where('name', 'Algorithm Knight')->first();
+
+        if ($badge1) {
+            $alice->badges()->attach($badge1->id);
+            $bob->badges()->attach($badge1->id);
+            $charlie->badges()->attach($badge1->id);
+        }
+        if ($badge2 && $badge3) {
+            $alice->badges()->attach([$badge2->id, $badge3->id]);
+            $bob->badges()->attach([$badge2->id, $badge3->id]);
+        }
+        if ($badge4) {
+            $bob->badges()->attach($badge4->id);
+        }
+
+        // Create Solved Problem Submissions for Alice (6 problems)
+        $aliceProblems = ['two-sum', 'reverse-string', 'fibonacci-number', 'palindrome-number', 'fizz-buzz', 'valid-parentheses'];
+        foreach ($aliceProblems as $slug) {
+            $prob = Problem::where('slug', $slug)->first();
+            if ($prob) {
+                \App\Models\Submission::create([
+                    'user_id' => $alice->id,
+                    'problem_id' => $prob->id,
+                    'language' => 'python',
+                    'code' => '# Alice solution for ' . $slug,
+                    'status' => 'Accepted',
+                    'execution_time' => rand(15, 80),
+                    'memory_used' => rand(1024, 4096),
+                    'created_at' => Carbon::now()->subDays(2),
+                ]);
+            }
+        }
+
+        // Create Solved Problem Submissions for Bob (12 problems)
+        $bobProblems = [
+            'two-sum', 'reverse-string', 'fibonacci-number', 'palindrome-number', 'fizz-buzz', 'valid-parentheses',
+            'merge-two-sorted-lists', 'add-two-numbers', 'length-of-last-word', 'plus-one', 'climbing-stairs', 'merge-sorted-array'
+        ];
+        foreach ($bobProblems as $slug) {
+            $prob = Problem::where('slug', $slug)->first();
+            if ($prob) {
+                \App\Models\Submission::create([
+                    'user_id' => $bob->id,
+                    'problem_id' => $prob->id,
+                    'language' => 'cpp',
+                    'code' => '// Bob solution for ' . $slug,
+                    'status' => 'Accepted',
+                    'execution_time' => rand(15, 80),
+                    'memory_used' => rand(1024, 4096),
+                    'created_at' => Carbon::now()->subDays(3),
+                ]);
+            }
+        }
+
+        // Create Solved Problem Submissions for Charlie (2 problems)
+        $charlieProblems = ['two-sum', 'reverse-string'];
+        foreach ($charlieProblems as $slug) {
+            $prob = Problem::where('slug', $slug)->first();
+            if ($prob) {
+                \App\Models\Submission::create([
+                    'user_id' => $charlie->id,
+                    'problem_id' => $prob->id,
+                    'language' => 'javascript',
+                    'code' => '// Charlie solution for ' . $slug,
+                    'status' => 'Accepted',
+                    'execution_time' => rand(15, 80),
+                    'memory_used' => rand(1024, 4096),
+                    'created_at' => Carbon::now()->subDays(1),
+                ]);
+            }
         }
     }
 }
