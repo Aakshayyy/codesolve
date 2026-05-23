@@ -37,7 +37,7 @@ class CodeExecutionService
         }
 
         // 3. Try Mock
-        return $this->executeOnMock($problem, $language, $wrappedCode, $input);
+        return $this->executeOnMock($problem, $language, $code, $input);
     }
 
     /**
@@ -74,7 +74,7 @@ class CodeExecutionService
 
             // 3. Try Mock
             if (!$result) {
-                $result = $this->executeOnMock($problem, $language, $wrappedCode, $testCase->input ?? '');
+                $result = $this->executeOnMock($problem, $language, $code, $testCase->input ?? '');
             }
 
             // Compare result output with expected output
@@ -404,22 +404,62 @@ class CodeExecutionService
     }
 
     /**
+     * Strip comments and whitespaces from code for comparison.
+     */
+    private function stripCommentsAndWhitespace(string $language, string $code): string
+    {
+        if ($language === 'python') {
+            $code = preg_replace('/#.*/', '', $code) ?? $code;
+        } else {
+            $code = preg_replace('/\/\/.*|\/\*[\s\S]*?\*\//', '', $code) ?? $code;
+        }
+        return str_replace([' ', "\n", "\r", "\t"], '', $code);
+    }
+
+    /**
      * Fallback mock execution when offline or API is down.
      */
     private function executeOnMock(Problem $problem, string $language, string $code, string $input): array
     {
         // Clean user code to check for stubs or minimal logic
-        $cleanCode = str_replace([' ', "\n", "\r", "\t"], '', $code);
+        $cleanCode = $this->stripCommentsAndWhitespace($language, $code);
         
         // Simple heuristic: if code is too short or doesn't look like code, compile error
-        if (strlen($cleanCode) < 15 || str_contains($code, 'TODO') || str_contains($code, 'write your code here')) {
+        if (strlen($cleanCode) < 15) {
             return [
                 'status' => 'Compile Error',
                 'stdout' => '',
-                'stderr' => 'Compilation error: Syntax error or incomplete function definition.',
+                'stderr' => 'Compilation error: Empty solution or syntax error.',
                 'time' => 0,
                 'memory' => 0
             ];
+        }
+
+        // Check if user submitted unmodified starter template code
+        $starters = SignatureService::generateStarterCodes($problem, []);
+        if (isset($starters[$language])) {
+            $strippedStarter = $this->stripCommentsAndWhitespace($language, $starters[$language]);
+            if ($cleanCode === $strippedStarter) {
+                return [
+                    'status' => 'Compile Error',
+                    'stdout' => '',
+                    'stderr' => 'Compilation error: Starter template unmodified.',
+                    'time' => 0,
+                    'memory' => 0
+                ];
+            }
+        } else {
+            // Only perform placeholder check if there is no official starter template configured
+            $lowerCode = strtolower($code);
+            if (str_contains($lowerCode, 'todo') || str_contains($lowerCode, 'write your code here') || str_contains($lowerCode, 'write your javacode') || str_contains($lowerCode, 'write your javascript')) {
+                return [
+                    'status' => 'Compile Error',
+                    'stdout' => '',
+                    'stderr' => 'Compilation error: Starter template placeholder comments detected.',
+                    'time' => 0,
+                    'memory' => 0
+                ];
+            }
         }
 
         // Check if input matches one of the test cases

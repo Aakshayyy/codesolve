@@ -436,4 +436,65 @@ class CodeExecutionTest extends TestCase
         $this->assertEquals(1, $user->badges()->count());
         $this->assertEquals($badgeSolved->id, $user->badges()->first()->id);
     }
+
+    public function test_mock_rejects_empty_code(): void
+    {
+        $problem = Problem::create([
+            'title' => 'Test Problem',
+            'slug' => 'test-problem',
+            'description' => 'Desc',
+            'difficulty' => 'easy',
+            'constraints' => 'None',
+            'input_format' => 'None',
+            'output_format' => 'None',
+            'time_limit' => 1000,
+            'memory_limit' => 256,
+        ]);
+
+        $result = $this->codeExecutionService->runCode($problem, 'python', '   ', 'test_input');
+        $this->assertEquals('Compile Error', $result['status']);
+        $this->assertStringContainsString('Empty solution', $result['stderr']);
+    }
+
+    public function test_mock_rejects_unmodified_starter_template(): void
+    {
+        $problem = Problem::create([
+            'title' => 'Two Sum',
+            'slug' => 'two-sum',
+            'description' => 'Desc',
+            'difficulty' => 'easy',
+            'constraints' => 'None',
+            'input_format' => 'None',
+            'output_format' => 'None',
+            'time_limit' => 1000,
+            'memory_limit' => 256,
+        ]);
+
+        $starterCode = "from typing import List\n\nclass Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        # Write your code here\n        pass";
+        
+        $result = $this->codeExecutionService->runCode($problem, 'python', $starterCode, 'test_input');
+        $this->assertEquals('Compile Error', $result['status']);
+        $this->assertStringContainsString('Starter template unmodified', $result['stderr']);
+    }
+
+    public function test_mock_rejects_code_with_placeholders(): void
+    {
+        $problem = Problem::create([
+            'title' => 'Test Problem',
+            'slug' => 'test-problem',
+            'description' => 'Desc',
+            'difficulty' => 'easy',
+            'constraints' => 'None',
+            'input_format' => 'None',
+            'output_format' => 'None',
+            'time_limit' => 1000,
+            'memory_limit' => 256,
+        ]);
+
+        $code = "def solution():\n    # TODO: write your code here\n    pass";
+        
+        $result = $this->codeExecutionService->runCode($problem, 'python', $code, 'test_input');
+        $this->assertEquals('Compile Error', $result['status']);
+        $this->assertStringContainsString('placeholder comments', $result['stderr']);
+    }
 }
