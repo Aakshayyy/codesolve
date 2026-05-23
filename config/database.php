@@ -39,18 +39,18 @@ return [
                 $defaultPath = database_path('database.sqlite');
                 if (isset($_SERVER['VERCEL_COMMIT_ID']) || env('VERCEL') || getenv('VERCEL')) {
                     $tmpPath = '/tmp/database.sqlite';
-                    $copyNeeded = !file_exists($tmpPath);
-                    if (!$copyNeeded && file_exists($defaultPath)) {
-                        if (filemtime($defaultPath) > filemtime($tmpPath) || filesize($defaultPath) !== filesize($tmpPath)) {
-                            $copyNeeded = true;
-                        }
-                    }
+                    $mtimeFile = '/tmp/db_deployed_mtime.txt';
+                    $defaultMtime = file_exists($defaultPath) ? filemtime($defaultPath) : 0;
+                    
+                    $copyNeeded = !file_exists($tmpPath) || !file_exists($mtimeFile) || (file_get_contents($mtimeFile) != $defaultMtime);
+                    
                     if ($copyNeeded) {
                         if (file_exists($defaultPath)) {
                             copy($defaultPath, $tmpPath);
-                            touch($tmpPath, filemtime($defaultPath));
+                            file_put_contents($mtimeFile, $defaultMtime);
                         } else {
                             touch($tmpPath);
+                            file_put_contents($mtimeFile, 0);
                         }
                     }
                     return $tmpPath;

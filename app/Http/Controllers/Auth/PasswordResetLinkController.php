@@ -37,9 +37,23 @@ class PasswordResetLinkController extends Controller
             $request->only('email')
         );
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        if ($status == Password::RESET_LINK_SENT) {
+            $message = __($status);
+            if (config('mail.default') === 'log') {
+                $user = \App\Models\User::where('email', $request->email)->first();
+                if ($user) {
+                    $token = Password::getRepository()->create($user);
+                    $resetUrl = route('password.reset', [
+                        'token' => $token,
+                        'email' => $user->email,
+                    ]);
+                    $message .= " (Log mailer active. Local reset link: " . $resetUrl . ")";
+                }
+            }
+            return back()->with('status', $message);
+        }
+
+        return back()->withInput($request->only('email'))
+            ->withErrors(['email' => __($status)]);
     }
 }
